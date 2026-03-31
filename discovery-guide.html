@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Discovery Guide — Live Call Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0C1A2E;
+  --ink-2: #132238;
+  --ink-3: #1A2F4A;
+  --ink-4: #223558;
+  --b: rgba(255,255,255,0.07);
+  --b2: rgba(255,255,255,0.12);
+  --teal: #00CFA8;
+  --teal-d: rgba(0,207,168,0.12);
+  --teal-b: rgba(0,207,168,0.28);
+  --amber: #FFBA42;
+  --amber-d: rgba(255,186,66,0.12);
+  --rose: #FF6B8A;
+  --sky: #5BA8FF;
+  --sky-d: rgba(91,168,255,0.12);
+  --t1: #EAF0F8;
+  --t2: #8DAFC8;
+  --t3: #4A6E88;
+  --r: 10px;
+  --sidebar: 220px;
+  --header: 54px;
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html,body { height:100%; }
+body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--ink); color:var(--t1); display:flex; flex-direction:column; min-height:100vh; }
+
+/* ── TOP BAR ── */
+.topbar {
+  height:var(--header); background:var(--ink-2); border-bottom:1px solid var(--b);
+  display:flex; align-items:center; padding:0 20px; gap:12px; flex-shrink:0;
+  position:sticky; top:0; z-index:50;
+}
+.logo { font-family:'Syne',sans-serif; font-weight:800; font-size:15px; color:var(--teal); }
+.topbar-pipe { color:var(--t3); }
+.topbar-title { font-size:13px; font-weight:600; color:var(--t2); }
+.topbar-space { flex:1; }
+.stage-label {
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; color:var(--t3);
+}
+.topbar-pill {
+  display:flex; align-items:center; gap:6px; background:var(--ink-3);
+  border:1px solid var(--b); border-radius:100px; padding:5px 12px;
+  font-size:12px; font-weight:600; color:var(--t2); cursor:pointer;
+  transition:all .15s;
+}
+.topbar-pill:hover { color:var(--t1); border-color:var(--b2); }
+.topbar-pill.active { background:var(--teal-d); border-color:var(--teal-b); color:var(--teal); }
+
+/* ── APP SHELL ── */
+.app { display:flex; flex:1; overflow:hidden; height:calc(100vh - var(--header)); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width:var(--sidebar); min-width:var(--sidebar); background:var(--ink-2);
+  border-right:1px solid var(--b); display:flex; flex-direction:column;
+  overflow-y:auto; padding:16px 0;
+}
+.sidebar::-webkit-scrollbar { width:3px; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--ink-4); border-radius:2px; }
+
+.sidebar-section { padding:14px 16px 6px; font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--t3); }
+.nav-step {
+  display:flex; align-items:center; gap:9px; padding:9px 16px;
+  cursor:pointer; transition:all .15s; border-left:2px solid transparent;
+  font-size:12.5px; font-weight:500; color:var(--t2); text-decoration:none;
+}
+.nav-step:hover { color:var(--t1); background:rgba(255,255,255,0.03); }
+.nav-step.active { color:var(--teal); border-left-color:var(--teal); background:var(--teal-d); font-weight:600; }
+.nav-step.complete { color:var(--t2); }
+.nav-step.complete .step-dot { background:var(--teal); border-color:var(--teal); }
+.nav-step.complete .step-dot::after { content:'✓'; font-size:8px; color:var(--ink); font-weight:800; display:flex; align-items:center; justify-content:center; }
+.step-dot {
+  width:18px; height:18px; border-radius:50%; border:1.5px solid var(--t3);
+  flex-shrink:0; display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-family:'Syne',sans-serif; font-weight:700; color:var(--t3);
+  transition:all .2s;
+}
+.nav-step.active .step-dot { background:var(--teal-d); border-color:var(--teal); color:var(--teal); }
+.step-label { flex:1; line-height:1.3; }
+
+.sidebar-progress { padding:16px; margin-top:auto; border-top:1px solid var(--b); }
+.progress-track { height:4px; background:var(--ink-4); border-radius:2px; overflow:hidden; margin-bottom:6px; }
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--teal),#00a884); border-radius:2px; transition:width .4s ease; }
+.progress-text { font-size:11px; color:var(--t3); display:flex; justify-content:space-between; }
+.progress-text strong { color:var(--teal); }
+
+/* ── MAIN ── */
+.main { flex:1; overflow-y:auto; }
+.main::-webkit-scrollbar { width:4px; }
+.main::-webkit-scrollbar-thumb { background:var(--ink-3); border-radius:2px; }
+
+/* ── STAGE VIEW ── */
+.stage { display:none; min-height:100%; flex-direction:column; }
+.stage.active { display:flex; }
+
+.stage-header {
+  padding:28px 36px 20px; border-bottom:1px solid var(--b);
+  background:linear-gradient(180deg,var(--ink-2) 0%,transparent 100%);
+  flex-shrink:0;
+}
+.stage-badge {
+  display:inline-flex; align-items:center; gap:6px; font-family:'Syne',sans-serif;
+  font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--t3); margin-bottom:8px;
+}
+.stage-badge-dot { width:6px; height:6px; border-radius:50%; background:var(--teal); }
+.stage-h1 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; line-height:1.2; margin-bottom:6px; }
+.stage-sub { font-size:13.5px; color:var(--t2); line-height:1.6; max-width:580px; }
+.stage-tip {
+  margin-top:14px; display:inline-flex; align-items:flex-start; gap:8px;
+  background:var(--amber-d); border:1px solid rgba(255,186,66,.2); border-radius:8px;
+  padding:9px 14px; font-size:12.5px; color:var(--amber); line-height:1.5;
+  max-width:580px;
+}
+.tip-icon { flex-shrink:0; font-size:14px; }
+
+.stage-body { padding:28px 36px 40px; flex:1; }
+
+/* ── QUESTION CARDS ── */
+.q-grid { display:grid; gap:16px; }
+.q-grid.cols-2 { grid-template-columns:1fr 1fr; }
+.q-grid.cols-3 { grid-template-columns:1fr 1fr 1fr; }
+
+.q-card {
+  background:var(--ink-2); border:1px solid var(--b); border-radius:var(--r);
+  overflow:hidden; transition:border-color .15s;
+}
+.q-card:focus-within { border-color:var(--teal-b); }
+.q-card.span-2 { grid-column:span 2; }
+.q-card.span-3 { grid-column:1/-1; }
+
+.q-label {
+  padding:10px 14px 0; font-size:10.5px; font-weight:700; color:var(--t3);
+  text-transform:uppercase; letter-spacing:.09em; display:flex; align-items:center; gap:6px;
+}
+.q-hint { font-family:'Plus Jakarta Sans',sans-serif; font-size:11px; font-weight:400; color:var(--t3); text-transform:none; letter-spacing:0; margin-left:auto; font-style:italic; }
+.q-prompt { padding:5px 14px 10px; font-size:12px; color:var(--t2); line-height:1.5; font-style:italic; }
+.q-input {
+  width:100%; background:transparent; border:none; padding:8px 14px 14px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:14px; color:var(--t1);
+  resize:none; outline:none; line-height:1.6; min-height:48px;
+}
+.q-input::placeholder { color:var(--t3); }
+.q-input.tall { min-height:90px; }
+.q-input.short { min-height:36px; }
+
+/* inline select */
+.q-select {
+  width:100%; background:transparent; border:none; padding:8px 14px 14px;
+  font-family:'Plus Jakarta Sans',sans-serif; font-size:14px; color:var(--t1);
+  outline:none; appearance:none; cursor:pointer;
+}
+.q-select option { background:var(--ink-3); color:var(--t1); }
+
+/* chip toggle group */
+.q-chips { padding:8px 14px 14px; display:flex; flex-wrap:wrap; gap:7px; }
+.chip {
+  padding:5px 13px; border-radius:100px; border:1px solid var(--b);
+  font-size:12px; font-weight:600; color:var(--t2); cursor:pointer; transition:all .15s;
+  background:transparent; font-family:'Plus Jakarta Sans',sans-serif;
+}
+.chip:hover { border-color:var(--b2); color:var(--t1); }
+.chip.on { background:var(--teal-d); border-color:var(--teal-b); color:var(--teal); }
+
+/* stakeholder table */
+.stakeholder-table { width:100%; border-collapse:collapse; margin-top:2px; }
+.stakeholder-table th { font-size:10px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.09em; padding:6px 10px; text-align:left; border-bottom:1px solid var(--b); }
+.stakeholder-table td { padding:6px 6px; border-bottom:1px solid rgba(255,255,255,.04); vertical-align:top; }
+.stakeholder-table tr:last-child td { border-bottom:none; }
+.st-label { font-size:11px; color:var(--t2); padding:8px 10px; white-space:nowrap; font-weight:600; display:flex; align-items:center; gap:6px; }
+.st-icon { font-size:14px; }
+.st-input {
+  width:100%; background:var(--ink-3); border:1px solid var(--b); border-radius:6px;
+  padding:6px 10px; font-family:'Plus Jakarta Sans',sans-serif; font-size:12.5px;
+  color:var(--t1); outline:none; resize:none; transition:border-color .15s;
+  min-height:32px;
+}
+.st-input:focus { border-color:var(--teal-b); }
+.st-input::placeholder { color:var(--t3); }
+.st-check { width:28px; text-align:center; }
+.st-checkbox { width:16px; height:16px; border-radius:4px; border:1.5px solid var(--t3); cursor:pointer; appearance:none; display:flex; align-items:center; justify-content:center; transition:all .15s; }
+.st-checkbox:checked { background:var(--teal); border-color:var(--teal); }
+
+/* nav buttons */
+.stage-footer {
+  padding:20px 36px; border-top:1px solid var(--b); display:flex;
+  align-items:center; gap:12px; flex-shrink:0; background:var(--ink-2);
+}
+.btn-primary {
+  background:var(--teal); color:var(--ink); font-family:'Syne',sans-serif;
+  font-size:13px; font-weight:700; padding:10px 22px; border-radius:8px;
+  border:none; cursor:pointer; transition:all .15s; letter-spacing:.02em;
+}
+.btn-primary:hover { background:#00b897; transform:translateY(-1px); }
+.btn-ghost {
+  background:transparent; color:var(--t2); font-size:13px; font-weight:500;
+  padding:10px 16px; border-radius:8px; border:1px solid var(--b);
+  cursor:pointer; transition:all .15s; font-family:'Plus Jakarta Sans',sans-serif;
+}
+.btn-ghost:hover { color:var(--t1); border-color:var(--b2); }
+.footer-space { flex:1; }
+.autosave-note { font-size:11px; color:var(--t3); display:flex; align-items:center; gap:5px; }
+.save-dot { width:6px; height:6px; border-radius:50%; background:var(--teal); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── REVIEW STAGE ── */
+.review-grid { display:grid; gap:16px; }
+.review-block {
+  background:var(--ink-2); border:1px solid var(--b); border-radius:var(--r);
+  overflow:hidden;
+}
+.review-block-header {
+  padding:12px 16px; border-bottom:1px solid var(--b);
+  display:flex; align-items:center; gap:10px;
+}
+.review-block-icon { font-size:16px; }
+.review-block-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; flex:1; }
+.review-block-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:100px; }
+.badge-complete { background:rgba(0,207,168,.12); color:var(--teal); border:1px solid rgba(0,207,168,.25); }
+.badge-empty { background:var(--amber-d); color:var(--amber); border:1px solid rgba(255,186,66,.25); }
+.review-block-body { padding:14px 16px; }
+.review-row { display:flex; gap:10px; margin-bottom:10px; }
+.review-row:last-child { margin-bottom:0; }
+.review-label { font-size:10.5px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.08em; width:130px; flex-shrink:0; padding-top:2px; }
+.review-value { font-size:13.5px; color:var(--t2); line-height:1.6; flex:1; }
+.review-value.filled { color:var(--t1); }
+.review-value.empty { color:var(--t3); font-style:italic; }
+.review-stakeholder-list { display:flex; flex-direction:column; gap:8px; }
+.review-st-row {
+  display:flex; align-items:flex-start; gap:10px; padding:10px 12px;
+  background:var(--ink-3); border-radius:8px;
+}
+.review-st-icon { font-size:16px; width:22px; flex-shrink:0; }
+.review-st-name { font-size:12px; font-weight:700; color:var(--t1); margin-bottom:2px; }
+.review-st-detail { font-size:12px; color:var(--t2); line-height:1.5; }
+.review-concern { display:flex; gap:8px; padding:8px 12px; background:var(--ink-3); border-radius:8px; margin-bottom:6px; }
+.concern-dot { width:8px; height:8px; border-radius:50%; margin-top:4px; flex-shrink:0; }
+
+/* ── EXPORT ── */
+.export-options { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:28px; }
+.export-card {
+  background:var(--ink-2); border:1px solid var(--b); border-radius:var(--r);
+  padding:20px; cursor:pointer; transition:all .2s; text-align:center;
+}
+.export-card:hover { border-color:var(--teal-b); transform:translateY(-2px); }
+.export-card.selected { border-color:var(--teal); background:var(--teal-d); }
+.export-card-icon { font-size:28px; margin-bottom:10px; }
+.export-card-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; margin-bottom:4px; }
+.export-card-sub { font-size:11.5px; color:var(--t2); line-height:1.4; }
+
+.export-doc {
+  background:var(--ink-2); border:1px solid var(--b); border-radius:14px;
+  overflow:hidden;
+}
+.export-doc-header {
+  padding:24px 28px 20px; border-bottom:1px solid var(--b);
+  background:linear-gradient(135deg,var(--ink-3),var(--ink-2));
+}
+.export-doc-chip {
+  display:inline-block; background:var(--teal-d); border:1px solid var(--teal-b);
+  color:var(--teal); font-family:'Syne',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:.14em; text-transform:uppercase; padding:3px 10px; border-radius:100px; margin-bottom:10px;
+}
+.export-doc-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; line-height:1.2; margin-bottom:8px; }
+.export-doc-meta { display:flex; gap:16px; flex-wrap:wrap; }
+.doc-meta { font-size:12px; color:var(--t2); display:flex; align-items:center; gap:5px; }
+.export-doc-body { padding:24px 28px; }
+.doc-section { margin-bottom:22px; }
+.doc-section:last-child { margin-bottom:0; }
+.doc-section-title {
+  font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:.12em;
+  text-transform:uppercase; color:var(--teal); margin-bottom:10px;
+  padding-bottom:6px; border-bottom:1px solid var(--b);
+}
+.doc-text { font-size:13.5px; color:var(--t2); line-height:1.7; white-space:pre-wrap; }
+.doc-table { width:100%; border-collapse:collapse; font-size:13px; }
+.doc-table th { font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--t3); padding:8px 10px; text-align:left; border-bottom:1px solid var(--b); }
+.doc-table td { padding:9px 10px; color:var(--t2); border-bottom:1px solid rgba(255,255,255,.04); line-height:1.5; }
+.doc-table tr:last-child td { border-bottom:none; }
+
+/* ── EMAIL ── */
+.email-wrap { background:var(--ink-2); border:1px solid var(--b); border-radius:14px; overflow:hidden; }
+.email-fields { padding:14px 20px; border-bottom:1px solid var(--b); display:flex; flex-direction:column; gap:10px; }
+.email-field { display:flex; align-items:center; gap:12px; }
+.email-field-label { font-size:10.5px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.08em; width:55px; flex-shrink:0; }
+.email-field-val { flex:1; background:transparent; border:none; font-family:'Plus Jakarta Sans',sans-serif; font-size:13px; color:var(--t1); outline:none; }
+.email-field-val::placeholder { color:var(--t3); }
+.email-body-area { padding:18px 20px; font-family:'Plus Jakarta Sans',sans-serif; font-size:13.5px; line-height:1.75; color:var(--t2); background:transparent; border:none; resize:none; outline:none; width:100%; min-height:300px; }
+.email-footer { padding:12px 20px; border-top:1px solid var(--b); display:flex; gap:8px; align-items:center; }
+
+/* ── GUIDE PREFILL PREVIEW ── */
+.guide-preview-row { display:flex; align-items:flex-start; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,.04); }
+.guide-preview-row:last-child { border-bottom:none; }
+.guide-preview-row.populated .gp-name { color:var(--teal); }
+.gp-icon { font-size:18px; width:24px; flex-shrink:0; }
+.gp-name { font-family:'Syne',sans-serif; font-size:12.5px; font-weight:700; margin-bottom:4px; color:var(--t2); }
+.gp-fields { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; flex:1; }
+.gp-field { background:var(--ink-3); border-radius:6px; padding:6px 9px; }
+.gp-field-label { font-size:9.5px; font-weight:700; color:var(--t3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; }
+.gp-field-val { font-size:12px; color:var(--t2); line-height:1.4; }
+.gp-field-val.empty { color:var(--t3); font-style:italic; }
+
+.copy-btn {
+  background:var(--ink-3); border:1px solid var(--b); color:var(--t2); font-size:12px;
+  font-weight:600; padding:6px 14px; border-radius:6px; cursor:pointer;
+  transition:all .15s; font-family:'Plus Jakarta Sans',sans-serif;
+  display:flex; align-items:center; gap:5px;
+}
+.copy-btn:hover { color:var(--teal); border-color:var(--teal-b); }
+.copy-btn.copied { color:var(--teal); border-color:var(--teal); background:var(--teal-d); }
+
+.push-btn {
+  background:var(--teal-d); border:1px solid var(--teal-b); color:var(--teal);
+  font-family:'Syne',sans-serif; font-size:13px; font-weight:700;
+  padding:10px 22px; border-radius:8px; border:none; cursor:pointer;
+  transition:all .15s; display:flex; align-items:center; gap:7px;
+  border:1px solid var(--teal-b);
+}
+.push-btn:hover { background:rgba(0,207,168,.2); }
+.push-btn.pushed { background:rgba(0,207,168,.2); border-color:var(--teal); }
+
+.toast {
+  position:fixed; bottom:22px; right:22px; background:var(--ink-4);
+  border:1px solid var(--teal-b); color:var(--teal); font-family:'Syne',sans-serif;
+  font-size:13px; font-weight:700; padding:11px 18px; border-radius:9px;
+  display:none; align-items:center; gap:7px; z-index:200;
+  animation:slideup .2s ease;
+}
+.toast.show { display:flex; }
+@keyframes slideup { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">SlapFive</div>
+  <div class="topbar-pipe">|</div>
+  <div class="topbar-title">Live Discovery Guide</div>
+  <div class="topbar-space"></div>
+  <div class="stage-label" id="topStageLabel">Stage 1 of 6</div>
+</div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">Discovery Flow</div>
+
+    <div class="nav-step active" id="nav-0" onclick="goTo(0)">
+      <div class="step-dot">1</div>
+      <div class="step-label">Call Setup</div>
+    </div>
+    <div class="nav-step" id="nav-1" onclick="goTo(1)">
+      <div class="step-dot">2</div>
+      <div class="step-label">Situation</div>
+    </div>
+    <div class="nav-step" id="nav-2" onclick="goTo(2)">
+      <div class="step-dot">3</div>
+      <div class="step-label">Problems & Pain</div>
+    </div>
+    <div class="nav-step" id="nav-3" onclick="goTo(3)">
+      <div class="step-dot">4</div>
+      <div class="step-label">Impact & Vision</div>
+    </div>
+    <div class="nav-step" id="nav-4" onclick="goTo(4)">
+      <div class="step-dot">5</div>
+      <div class="step-label">Decision Process</div>
+    </div>
+    <div class="nav-step" id="nav-5" onclick="goTo(5)">
+      <div class="step-dot">6</div>
+      <div class="step-label">Stakeholders</div>
+    </div>
+
+    <div class="sidebar-section" style="margin-top:8px">Output</div>
+    <div class="nav-step" id="nav-6" onclick="goTo(6)">
+      <div class="step-dot" style="font-size:12px;">✦</div>
+      <div class="step-label">Review & Export</div>
+    </div>
+
+    <div class="sidebar-progress">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="progress-text">
+        <span>Progress</span>
+        <strong id="progressPct">0%</strong>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+
+    <!-- ══ STAGE 0: CALL SETUP ══ -->
+    <div class="stage active" id="stage-0">
+      <div class="stage-header">
+        <div class="stage-badge"><div class="stage-badge-dot"></div>Pre-Call Setup</div>
+        <div class="stage-h1">Who are you talking to?</div>
+        <div class="stage-sub">Fill these in before the call starts. Everything auto-saves as you type.</div>
+      </div>
+      <div class="stage-body">
+        <div class="q-grid cols-2">
+          <div class="q-card">
+            <div class="q-label">Company Name</div>
+            <input class="q-input short" id="f-company" placeholder="e.g. Acme Corporation" oninput="save()">
+          </div>
+          <div class="q-card">
+            <div class="q-label">Industry / Vertical</div>
+            <input class="q-input short" id="f-industry" placeholder="e.g. SaaS, Financial Services…" oninput="save()">
+          </div>
+          <div class="q-card">
+            <div class="q-label">Primary Contact</div>
+            <input class="q-input short" id="f-contact" placeholder="Name + Title" oninput="save()">
+          </div>
+          <div class="q-card">
+            <div class="q-label">Your Name</div>
+            <input class="q-input short" id="f-rep" placeholder="Your name" oninput="save()">
+          </div>
+          <div class="q-card">
+            <div class="q-label">Call Date</div>
+            <input class="q-input short" id="f-date" type="date" oninput="save()">
+          </div>
+          <div class="q-card">
+            <div class="q-label">Call Type</div>
+            <select class="q-select" id="f-calltype" onchange="save()">
+              <option value="">Select…</option>
+              <option>Discovery</option>
+              <option>Demo</option>
+              <option>Champion Call</option>
+              <option>Multi-stakeholder</option>
+              <option>Technical Review</option>
+            </select>
+          </div>
+          <div class="q-card span-2">
+            <div class="q-label">Known Context <span class="q-hint">What do you already know from research?</span></div>
+            <textarea class="q-input" id="f-context" placeholder="Notes from LinkedIn, website, prior conversations, news…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card span-2">
+            <div class="q-label">Goal for this call <span class="q-hint">What's the #1 outcome you want?</span></div>
+            <input class="q-input short" id="f-goal" placeholder="e.g. Identify the economic buyer, uncover top pain, get to a demo" oninput="save()">
+          </div>
+        </div>
+      </div>
+      <div class="stage-footer">
+        <div class="autosave-note"><div class="save-dot"></div>Auto-saving</div>
+        <div class="footer-space"></div>
+        <button class="btn-primary" onclick="goTo(1)">Start the Call →</button>
+      </div>
+    </div>
+
+    <!-- ══ STAGE 1: SITUATION ══ -->
+    <div class="stage" id="stage-1">
+      <div class="stage-header">
+        <div class="stage-badge"><div class="stage-badge-dot"></div>Stage 1 · Situation</div>
+        <div class="stage-h1">Build context. Understand the landscape.</div>
+        <div class="stage-sub">Open the conversation. Get them talking about their world — team, tools, process, goals — before you pitch anything.</div>
+        <div class="stage-tip">
+          <span class="tip-icon">💡</span>
+          <span><strong>Rep tip:</strong> Ask "What does good look like for your team this year?" — lets them set the agenda and reveals the strategic priorities that actually matter.</span>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="q-grid">
+          <div class="q-card">
+            <div class="q-label">Company size &amp; structure</div>
+            <div class="q-prompt">"Tell me a bit about your team — how big is marketing, how's it structured?"</div>
+            <textarea class="q-input" id="f-size" placeholder="Headcount, teams, reporting structure…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Current customer marketing process</div>
+            <div class="q-prompt">"Walk me through how you currently gather and use customer proof."</div>
+            <textarea class="q-input" id="f-process" placeholder="How do they collect stories? What tools? Who owns it?" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Top business priorities this year</div>
+            <div class="q-prompt">"What are the 2–3 things your team is most focused on in the next 12 months?"</div>
+            <textarea class="q-input" id="f-priorities" placeholder="Initiatives, OKRs, board priorities…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">What's driving this conversation?</div>
+            <div class="q-prompt">"What made you take this meeting today — what changed?"</div>
+            <textarea class="q-input" id="f-trigger" placeholder="Triggering event, new leader, missed targets, competitive pressure…" oninput="save()"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="stage-footer">
+        <button class="btn-ghost" onclick="goTo(0)">← Back</button>
+        <div class="footer-space"></div>
+        <div class="autosave-note"><div class="save-dot"></div>Auto-saving</div>
+        <button class="btn-primary" onclick="goTo(2)">Next: Pain →</button>
+      </div>
+    </div>
+
+    <!-- ══ STAGE 2: PROBLEMS & PAIN ══ -->
+    <div class="stage" id="stage-2">
+      <div class="stage-header">
+        <div class="stage-badge"><div class="stage-badge-dot"></div>Stage 2 · Problems &amp; Pain</div>
+        <div class="stage-h1">Dig into what's broken.</div>
+        <div class="stage-sub">Don't present solutions yet. Understand the pain deeply — the gap between where they are and where they want to be.</div>
+        <div class="stage-tip">
+          <span class="tip-icon">💡</span>
+          <span><strong>Rep tip:</strong> Use "Tell me more about that" 3 times before you move on. Surface-level pain = weak deal. Deep pain = real urgency.</span>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="q-grid">
+          <div class="q-card">
+            <div class="q-label">Primary pain / problem</div>
+            <div class="q-prompt">"What's the biggest challenge you're running into with customer proof today?"</div>
+            <textarea class="q-input tall" id="f-pain1" placeholder="The core frustration — in their own words…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Secondary pain</div>
+            <div class="q-prompt">"What else is frustrating about the current process?"</div>
+            <textarea class="q-input tall" id="f-pain2" placeholder="Second-order problems, workarounds, manual work…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">What have they tried?</div>
+            <div class="q-prompt">"Have you tried to solve this before? What happened?"</div>
+            <textarea class="q-input" id="f-tried" placeholder="Previous tools, internal efforts, why they failed…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Cost of doing nothing</div>
+            <div class="q-prompt">"What happens if this doesn't get solved in the next 6 months?"</div>
+            <textarea class="q-input" id="f-costnothing" placeholder="The risk of staying with the status quo…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card span-2">
+            <div class="q-label">Pain ownership — who feels this most?</div>
+            <div class="q-prompt">"Who else on your team deals with this problem day-to-day?"</div>
+            <textarea class="q-input" id="f-painowner" placeholder="Which teams/roles are most frustrated — sales, marketing, CS?" oninput="save()"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="stage-footer">
+        <button class="btn-ghost" onclick="goTo(1)">← Back</button>
+        <div class="footer-space"></div>
+        <div class="autosave-note"><div class="save-dot"></div>Auto-saving</div>
+        <button class="btn-primary" onclick="goTo(3)">Next: Impact →</button>
+      </div>
+    </div>
+
+    <!-- ══ STAGE 3: IMPACT & VISION ══ -->
+    <div class="stage" id="stage-3">
+      <div class="stage-header">
+        <div class="stage-badge"><div class="stage-badge-dot"></div>Stage 3 · Impact &amp; Vision</div>
+        <div class="stage-h1">Quantify the gap. Paint the picture.</div>
+        <div class="stage-sub">Help them articulate what winning looks like — and what it's worth to get there. This is your ROI foundation.</div>
+        <div class="stage-tip">
+          <span class="tip-icon">💡</span>
+          <span><strong>Rep tip:</strong> If they can't quantify impact, ask "How does this problem show up in a number that matters to your CMO/CRO?" — force it to a metric.</span>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="q-grid">
+          <div class="q-card">
+            <div class="q-label">Business impact of the problem</div>
+            <div class="q-prompt">"How is this showing up in your numbers — pipeline, win rate, content volume, churn?"</div>
+            <textarea class="q-input" id="f-impact" placeholder="Metrics affected, revenue tied to this problem…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">What does success look like?</div>
+            <div class="q-prompt">"If this was completely solved a year from now, what would be different?"</div>
+            <textarea class="q-input" id="f-success" placeholder="Their vision of the solved state — specific outcomes…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Must-have requirements</div>
+            <div class="q-prompt">"Are there any non-negotiables — things a solution absolutely must do or have?"</div>
+            <textarea class="q-input" id="f-musthave" placeholder="Hard requirements, deal-breakers if missing…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Nice-to-haves</div>
+            <div class="q-prompt">"What would make this even more valuable — a wish list?"</div>
+            <textarea class="q-input" id="f-nicetohave" placeholder="Preferences, bonus features, future-state desires…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Technical requirements</div>
+            <div class="q-prompt">"From an integration standpoint — what must this connect to? Salesforce, Marketo, anything else?"</div>
+            <textarea class="q-input" id="f-techreqs" placeholder="CRM, MAP, SSO, APIs, data residency…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Security &amp; compliance</div>
+            <div class="q-prompt">"Does your security team have a vendor review process? Any compliance certifications required?"</div>
+            <textarea class="q-input" id="f-security" placeholder="SOC2, GDPR, ISO, internal questionnaire process…" oninput="save()"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="stage-footer">
+        <button class="btn-ghost" onclick="goTo(2)">← Back</button>
+        <div class="footer-space"></div>
+        <div class="autosave-note"><div class="save-dot"></div>Auto-saving</div>
+        <button class="btn-primary" onclick="goTo(4)">Next: Decision →</button>
+      </div>
+    </div>
+
+    <!-- ══ STAGE 4: DECISION PROCESS ══ -->
+    <div class="stage" id="stage-4">
+      <div class="stage-header">
+        <div class="stage-badge"><div class="stage-badge-dot"></div>Stage 4 · Decision Process</div>
+        <div class="stage-h1">Map the path to a signed contract.</div>
+        <div class="stage-sub">Understand how decisions get made, who's involved, and what could slow this down. Don't leave this stage without a clear map.</div>
+        <div class="stage-tip">
+          <span class="tip-icon">💡</span>
+          <span><strong>Rep tip:</strong> Ask "What would have to be true for you to sign by [date]?" — makes the timeline concrete and surfaces hidden blockers early.</span>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div class="q-grid cols-2">
+          <div class="q-card">
+            <div class="q-label">Decision timeline</div>
+            <div class="q-prompt">"When are you looking to have something in place?"</div>
+            <input class="q-input short" id="f-timeline" placeholder="e.g. End of Q2, before our June launch…" oninput="save()">
+          </div>
+          <div class="q-card">
+            <div class="q-label">Budget status</div>
+            <div class="q-prompt">"Is budget allocated, or does this need to go through an approval?"</div>
+            <div class="q-chips">
+              <button class="chip" id="chip-budget-approved" onclick="toggleChip('budget','approved')">Approved</button>
+              <button class="chip" id="chip-budget-pending" onclick="toggleChip('budget','pending')">Pending approval</button>
+              <button class="chip" id="chip-budget-unplanned" onclick="toggleChip('budget','unplanned')">Not in budget yet</button>
+              <button class="chip" id="chip-budget-unknown" onclick="toggleChip('budget','unknown')">Unknown</button>
+            </div>
+          </div>
+          <div class="q-card">
+            <div class="q-label">Budget range</div>
+            <div class="q-prompt">"What's the ballpark you're working with for something like this?"</div>
+            <input class="q-input short" id="f-budget" placeholder="e.g. $50–80k, enterprise tier…" oninput="save()">
+          </div>
+          <div class="q-card">
+            <div class="q-label">Who signs the contract?</div>
+            <div class="q-prompt">"Who's the ultimate decision maker — who writes the check?"</div>
+            <input class="q-input short" id="f-signer" placeholder="Name + Title of economic buyer" oninput="save()">
+          </div>
+          <div class="q-card span-2">
+            <div class="q-label">Decision criteria</div>
+            <div class="q-prompt">"How will you evaluate vendors — what does the winning solution need to nail?"</div>
+            <textarea class="q-input" id="f-criteria" placeholder="What matters most in the decision: integration, ease of use, price, references, support…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card span-2">
+            <div class="q-label">Potential blockers</div>
+            <div class="q-prompt">"What could get in the way of moving forward — what's your biggest concern?"</div>
+            <textarea class="q-input" id="f-blockers" placeholder="Budget freeze, legal delays, competing priorities, security review, executive buy-in…" oninput="save()"></textarea>
+          </div>
+          <div class="q-card span-2">
+            <div class="q-label">Agreed next steps</div>
+            <div class="q-prompt">Before you end the call — confirm the next step with a specific date.</div>
+            <textarea class="q-input" id="f-nextsteps" placeholder="e.g. 'Send implementation guide by Friday, schedule security call for next Tuesday…'" oninput="save()"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="stage-footer">
+        <button class="btn-ghost" onclick="goTo(3)">← Back</button>
+        <div class="footer-space"></div>
+        <div class="autosave-note"><div class="save-dot"></div>Auto-saving</div>
+        <button class="btn-primary" onclick="goTo(5)">Next: Stakeholders →</button>
+      </div>
+    </div>
+
+    <!-- ══ STAGE 5: STAKEHOLDERS ══ -->
+    <div class="stage" id="stage-5">
+      <div class="stage-header">
+        <div class="stage-badge"><div class="stage-badge-dot"></div>Stage 5 · Stakeholders</div>
+        <div class="stage-h1">Map the buying committee.</div>
+        <div class="stage-sub">Identify every team involved in the decision. Note who you've met, who you still need access to, and what each team cares about.</div>
+        <div class="stage-tip">
+          <span class="tip-icon">💡</span>
+          <span><strong>Rep tip:</strong> "Besides yourself, who else will weigh in on this decision?" — keep asking until you've got all 9 teams accounted for or explicitly ruled out.</span>
+        </div>
+      </div>
+      <div class="stage-body">
+        <div style="overflow-x:auto">
+          <table class="stakeholder-table">
+            <thead>
+              <tr>
+                <th style="width:160px">Team</th>
+                <th style="width:70px;text-align:center">Involved?</th>
+                <th>Contact Name(s)</th>
+                <th>Their Priority / Concern</th>
+                <th>Involvement Level</th>
+              </tr>
+            </thead>
+            <tbody id="stakeholderTable"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:20px">
+          <div class="q-card">
+            <div class="q-label">Champion notes</div>
+            <div class="q-prompt">Your read on the internal champion — how strong is their motivation to make this happen?</div>
+            <textarea class="q-input" id="f-champion" placeholder="Who's driving this internally? How much political capital do they have? Any risks?" oninput="save()"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="stage-footer">
+        <button class="btn-ghost" onclick="goTo(4)">← Back</button>
+        <div class="footer-space"></div>
+        <div class="autosave-note"><div class="save-dot"></div>Auto-saving</div>
+        <button class="btn-primary" onclick="goTo(6)">Review &amp; Export →</button>
+      </div>
+    </div>
+
+    <!-- ══ STAGE 6: REVIEW & EXPORT ══ -->
+    <div class="stage" id="stage-6">
+      <div class="stage-header">
+        <div class="stage-badge"><div class="stage-badge-dot"></div>Output</div>
+        <div class="stage-h1">Review, generate &amp; export.</div>
+        <div class="stage-sub">Your discovery notes are compiled below. Choose what to export — a call summary, follow-up email, or pre-filled buyer guide.</div>
+      </div>
+      <div class="stage-body">
+
+        <!-- Export format selector -->
+        <div class="export-options" style="margin-bottom:24px">
+          <div class="export-card selected" id="export-card-summary" onclick="selectExport('summary')">
+            <div class="export-card-icon">📄</div>
+            <div class="export-card-title">Call Summary</div>
+            <div class="export-card-sub">Full discovery doc for CRM or Slack</div>
+          </div>
+          <div class="export-card" id="export-card-email" onclick="selectExport('email')">
+            <div class="export-card-icon">✉️</div>
+            <div class="export-card-title">Follow-up Email</div>
+            <div class="export-card-sub">Ready-to-send champion email</div>
+          </div>
+          <div class="export-card" id="export-card-guide" onclick="selectExport('guide')">
+            <div class="export-card-icon">📚</div>
+            <div class="export-card-title">Buyer Guide Prefill</div>
+            <div class="export-card-sub">Push data to Decision Team tracker</div>
+          </div>
+        </div>
+
+        <!-- SUMMARY DOC -->
+        <div id="export-summary">
+          <div class="export-doc">
+            <div class="export-doc-header">
+              <div class="export-doc-chip">Discovery Summary</div>
+              <div class="export-doc-title" id="doc-title">Call Summary</div>
+              <div class="export-doc-meta">
+                <div class="doc-meta">🏢 <span id="doc-company">—</span></div>
+                <div class="doc-meta">📅 <span id="doc-date">—</span></div>
+                <div class="doc-meta">👤 <span id="doc-rep">—</span></div>
+              </div>
+            </div>
+            <div class="export-doc-body">
+              <div class="doc-section">
+                <div class="doc-section-title">Situation</div>
+                <div class="doc-text" id="doc-situation">—</div>
+              </div>
+              <div class="doc-section">
+                <div class="doc-section-title">Pain &amp; Problems</div>
+                <div class="doc-text" id="doc-pain">—</div>
+              </div>
+              <div class="doc-section">
+                <div class="doc-section-title">Impact &amp; Requirements</div>
+                <div class="doc-text" id="doc-impact">—</div>
+              </div>
+              <div class="doc-section">
+                <div class="doc-section-title">Decision Process</div>
+                <div class="doc-text" id="doc-decision">—</div>
+              </div>
+              <div class="doc-section">
+                <div class="doc-section-title">Stakeholders</div>
+                <table class="doc-table">
+                  <thead><tr><th>Team</th><th>Contact</th><th>Priority / Concern</th><th>Role</th></tr></thead>
+                  <tbody id="doc-stakeholders"></tbody>
+                </table>
+              </div>
+              <div class="doc-section">
+                <div class="doc-section-title">Agreed Next Steps</div>
+                <div class="doc-text" id="doc-nextsteps">—</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px;align-items:center;">
+            <button class="copy-btn" id="copyDocBtn" onclick="copyDoc()">📋 Copy Summary</button>
+            <div class="footer-space"></div>
+          </div>
+        </div>
+
+        <!-- FOLLOW-UP EMAIL -->
+        <div id="export-email" style="display:none">
+          <div class="email-wrap">
+            <div class="email-fields">
+              <div class="email-field">
+                <div class="email-field-label">To</div>
+                <input class="email-field-val" id="email-to" placeholder="champion@company.com">
+              </div>
+              <div class="email-field">
+                <div class="email-field-label">Subject</div>
+                <input class="email-field-val" id="email-subject" placeholder="Following up on our conversation…">
+              </div>
+            </div>
+            <textarea class="email-body-area" id="email-body"></textarea>
+            <div class="email-footer">
+              <button class="copy-btn" id="copyEmailBtn" onclick="copyEmail()">📋 Copy Email</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUYER GUIDE PREFILL -->
+        <div id="export-guide" style="display:none">
+          <div class="export-doc">
+            <div class="export-doc-header" style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;">
+              <div>
+                <div class="export-doc-chip">Buyer Guide</div>
+                <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800">Decision Team Prefill Preview</div>
+              </div>
+              <button class="push-btn" id="pushBtn" onclick="pushToGuide()">↗ Push to Buyer Guide</button>
+            </div>
+            <div class="export-doc-body" id="guide-prefill-body"></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="stage-footer">
+        <button class="btn-ghost" onclick="goTo(5)">← Back</button>
+        <div class="footer-space"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg">✓ Done</span></div>
+
+<script>
+// ═══════════════════════════════
+//  DATA
+// ═══════════════════════════════
+const TEAMS = [
+  { id:'sales-leadership',  icon:'🎯', label:'Sales Leadership',       inv:'Decision Maker' },
+  { id:'sales-ops',         icon:'⚙️', label:'Sales Ops / SFDC',       inv:'Influencer' },
+  { id:'mktg-leadership',   icon:'📢', label:'Marketing Leadership',   inv:'Decision Maker' },
+  { id:'mktg-ops',          icon:'🔧', label:'Marketing Ops',          inv:'Influencer' },
+  { id:'demand-gen',        icon:'✍️', label:'Demand Gen / Content',   inv:'Influencer' },
+  { id:'customer-success',  icon:'💚', label:'Customer Success',       inv:'Influencer' },
+  { id:'legal',             icon:'⚖️', label:'Legal',                  inv:'Reviewer' },
+  { id:'infosec',           icon:'🔒', label:'Infosec',                inv:'Reviewer' },
+  { id:'it-procurement',    icon:'🏢', label:'IT / Procurement',       inv:'Reviewer' },
+];
+
+const INVOLVEMENT = ['Decision Maker','Influencer','Reviewer','FYI Only'];
+const chipState = {};
+let currentStage = 0;
+let currentExport = 'summary';
+const TOTAL_STAGES = 7;
+
+// ═══════════════════════════════
+//  INIT
+// ═══════════════════════════════
+function init() {
+  buildStakeholderTable();
+  loadSaved();
+  buildSummary();
+  buildEmail();
+  buildGuidePreview();
+  updateProgress();
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+}
+
+function buildStakeholderTable() {
+  const tbody = document.getElementById('stakeholderTable');
+  tbody.innerHTML = TEAMS.map(t => `
+    <tr id="st-row-${t.id}">
+      <td><div class="st-label"><span class="st-icon">${t.icon}</span>${t.label}</div></td>
+      <td class="st-check">
+        <input type="checkbox" class="st-checkbox" id="st-check-${t.id}"
+          onchange="save();updateRowFade('${t.id}')" style="margin:6px auto;display:block">
+      </td>
+      <td><textarea class="st-input" id="st-name-${t.id}" rows="1" placeholder="Name(s)" oninput="save()"></textarea></td>
+      <td><textarea class="st-input" id="st-concern-${t.id}" rows="2" placeholder="What they care about…" oninput="save()"></textarea></td>
+      <td>
+        <select class="st-input" id="st-inv-${t.id}" onchange="save()" style="min-height:32px;padding:4px 8px">
+          ${INVOLVEMENT.map(v=>`<option${v===t.inv?' selected':''}>${v}</option>`).join('')}
+        </select>
+      </td>
+    </tr>
+  `).join('');
+  TEAMS.forEach(t => updateRowFade(t.id));
+}
+
+function updateRowFade(id) {
+  const checked = document.getElementById('st-check-'+id)?.checked;
+  document.getElementById('st-row-'+id).style.opacity = checked ? '1' : '0.45';
+}
+
+// ═══════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════
+function goTo(n) {
+  document.querySelectorAll('.stage').forEach((s,i) => s.classList.toggle('active', i===n));
+  document.querySelectorAll('.nav-step').forEach((nav,i) => {
+    nav.classList.remove('active');
+    if (i === n) nav.classList.add('active');
+    if (i < n) nav.classList.add('complete'); else nav.classList.remove('complete');
+  });
+  currentStage = n;
+  document.getElementById('topStageLabel').textContent = n < 6 ? `Stage ${n+1} of 6` : 'Review & Export';
+  document.getElementById('main').scrollTop = 0;
+  if (n === 6) { buildSummary(); buildEmail(); buildGuidePreview(); }
+  updateProgress();
+}
+
+// ═══════════════════════════════
+//  CHIP TOGGLES
+// ═══════════════════════════════
+function toggleChip(group, val) {
+  chipState[group] = chipState[group] === val ? null : val;
+  document.querySelectorAll(`[id^="chip-${group}-"]`).forEach(el => {
+    const v = el.id.replace(`chip-${group}-`,'');
+    el.classList.toggle('on', chipState[group] === v);
+  });
+  save();
+}
+
+// ═══════════════════════════════
+//  PERSIST
+// ═══════════════════════════════
+function val(id) { const el=document.getElementById(id); return el ? el.value.trim() : ''; }
+
+function save() {
+  const data = {
+    company:val('f-company'), industry:val('f-industry'), contact:val('f-contact'),
+    rep:val('f-rep'), date:val('f-date'), calltype:val('f-calltype'), context:val('f-context'),
+    goal:val('f-goal'), size:val('f-size'), process:val('f-process'), priorities:val('f-priorities'),
+    trigger:val('f-trigger'), pain1:val('f-pain1'), pain2:val('f-pain2'), tried:val('f-tried'),
+    costnothing:val('f-costnothing'), painowner:val('f-painowner'), impact:val('f-impact'),
+    success:val('f-success'), musthave:val('f-musthave'), nicetohave:val('f-nicetohave'),
+    techreqs:val('f-techreqs'), security:val('f-security'), timeline:val('f-timeline'),
+    budget:val('f-budget'), signer:val('f-signer'), criteria:val('f-criteria'),
+    blockers:val('f-blockers'), nextsteps:val('f-nextsteps'), champion:val('f-champion'),
+    chips: JSON.parse(JSON.stringify(chipState)),
+    stakeholders: TEAMS.map(t => ({
+      id: t.id, icon: t.icon, label: t.label,
+      involved: document.getElementById('st-check-'+t.id)?.checked || false,
+      name: val('st-name-'+t.id),
+      concern: val('st-concern-'+t.id),
+      inv: document.getElementById('st-inv-'+t.id)?.value || t.inv,
+    }))
+  };
+  localStorage.setItem('slapfive_discovery', JSON.stringify(data));
+  updateProgress();
+}
+
+function loadSaved() {
+  const raw = localStorage.getItem('slapfive_discovery');
+  if (!raw) return;
+  try {
+    const d = JSON.parse(raw);
+    const fields = ['company','industry','contact','rep','date','calltype','context','goal',
+      'size','process','priorities','trigger','pain1','pain2','tried','costnothing','painowner',
+      'impact','success','musthave','nicetohave','techreqs','security','timeline','budget',
+      'signer','criteria','blockers','nextsteps','champion'];
+    fields.forEach(f => { const el=document.getElementById('f-'+f); if(el && d[f]) el.value=d[f]; });
+    if (d.chips) Object.entries(d.chips).forEach(([g,v]) => { if(v) toggleChip(g,v); });
+    if (d.stakeholders) d.stakeholders.forEach(st => {
+      const cb = document.getElementById('st-check-'+st.id);
+      const nm = document.getElementById('st-name-'+st.id);
+      const cn = document.getElementById('st-concern-'+st.id);
+      const iv = document.getElementById('st-inv-'+st.id);
+      if (cb) { cb.checked = st.involved; updateRowFade(st.id); }
+      if (nm) nm.value = st.name || '';
+      if (cn) cn.value = st.concern || '';
+      if (iv) iv.value = st.inv || '';
+    });
+  } catch(e) {}
+}
+
+// ═══════════════════════════════
+//  PROGRESS
+// ═══════════════════════════════
+function updateProgress() {
+  const fields = ['f-company','f-contact','f-priorities','f-pain1','f-impact','f-musthave','f-timeline','f-nextsteps'];
+  const filled = fields.filter(id => { const el=document.getElementById(id); return el && el.value.trim().length > 0; }).length;
+  const pct = Math.round((filled / fields.length) * 100);
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressPct').textContent = pct+'%';
+}
+
+// ═══════════════════════════════
+//  BUILD EXPORTS
+// ═══════════════════════════════
+function or(v, fallback) { return v && v.trim() ? v.trim() : fallback || '—'; }
+
+function buildSummary() {
+  const company = val('f-company'); const rep = val('f-rep'); const date = val('f-date');
+  document.getElementById('doc-title').textContent = (val('f-calltype')||'Discovery')+' — '+(company||'Prospect');
+  document.getElementById('doc-company').textContent = or(company);
+  document.getElementById('doc-date').textContent = date ? new Date(date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('doc-rep').textContent = or(rep);
+
+  document.getElementById('doc-situation').textContent = [
+    val('f-size') && '• Team: '+val('f-size'),
+    val('f-process') && '• Current process: '+val('f-process'),
+    val('f-priorities') && '• Priorities: '+val('f-priorities'),
+    val('f-trigger') && '• What drove this meeting: '+val('f-trigger'),
+  ].filter(Boolean).join('\n') || '—';
+
+  document.getElementById('doc-pain').textContent = [
+    val('f-pain1') && '• Primary pain: '+val('f-pain1'),
+    val('f-pain2') && '• Secondary pain: '+val('f-pain2'),
+    val('f-tried') && '• What they\'ve tried: '+val('f-tried'),
+    val('f-costnothing') && '• Cost of doing nothing: '+val('f-costnothing'),
+  ].filter(Boolean).join('\n') || '—';
+
+  document.getElementById('doc-impact').textContent = [
+    val('f-impact') && '• Business impact: '+val('f-impact'),
+    val('f-success') && '• Success looks like: '+val('f-success'),
+    val('f-musthave') && '• Must-haves: '+val('f-musthave'),
+    val('f-nicetohave') && '• Nice-to-haves: '+val('f-nicetohave'),
+    val('f-techreqs') && '• Technical requirements: '+val('f-techreqs'),
+    val('f-security') && '• Security/compliance: '+val('f-security'),
+  ].filter(Boolean).join('\n') || '—';
+
+  document.getElementById('doc-decision').textContent = [
+    val('f-timeline') && '• Timeline: '+val('f-timeline'),
+    val('f-budget') && '• Budget: '+val('f-budget'),
+    chipState.budget && '• Budget status: '+chipState.budget,
+    val('f-signer') && '• Decision maker: '+val('f-signer'),
+    val('f-criteria') && '• Decision criteria: '+val('f-criteria'),
+    val('f-blockers') && '• Blockers: '+val('f-blockers'),
+  ].filter(Boolean).join('\n') || '—';
+
+  const tbody = document.getElementById('doc-stakeholders');
+  const stRows = TEAMS.map(t => ({
+    involved: document.getElementById('st-check-'+t.id)?.checked,
+    icon: t.icon, label: t.label,
+    name: val('st-name-'+t.id),
+    concern: val('st-concern-'+t.id),
+    inv: document.getElementById('st-inv-'+t.id)?.value,
+  })).filter(s => s.involved);
+  tbody.innerHTML = stRows.length ? stRows.map(s=>`
+    <tr>
+      <td>${s.icon} ${s.label}</td>
+      <td>${s.name||'<em style="color:var(--t3)">TBD</em>'}</td>
+      <td>${s.concern||'—'}</td>
+      <td>${s.inv||'—'}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="4" style="color:var(--t3);font-style:italic">No stakeholders marked as involved yet</td></tr>';
+
+  document.getElementById('doc-nextsteps').textContent = or(val('f-nextsteps'));
+}
+
+function buildEmail() {
+  const company = val('f-company'); const contact = val('f-contact');
+  const rep = val('f-rep'); const pain = val('f-pain1'); const nextsteps = val('f-nextsteps');
+  const musthave = val('f-musthave'); const timeline = val('f-timeline');
+
+  document.getElementById('email-subject').value = `Following up${company?' — '+company:''}`;
+
+  const stRows = TEAMS.filter(t => document.getElementById('st-check-'+t.id)?.checked)
+    .map(t => `  • ${t.icon} ${t.label}${val('st-name-'+t.id) ? ' ('+val('st-name-'+t.id)+')' : ''}`).join('\n');
+
+  document.getElementById('email-body').value = `Hi ${contact||'[Name]'},
+
+Thanks for the time today${company ? ' — great to learn more about what '+company+' is building' : ''}.
+
+Here's my recap of what we covered:
+
+${pain ? `PAIN & CHALLENGE\n${pain}\n\n` : ''}${musthave ? `WHAT YOU NEED\n${musthave}\n\n` : ''}${nextsteps ? `OUR NEXT STEPS\n${nextsteps}\n\n` : ''}${stRows ? `TEAMS INVOLVED\n${stRows}\n\n` : ''}${timeline ? `TIMELINE\n${timeline}\n\n` : ''}Please let me know if I missed anything or if anything changed.
+
+Looking forward to our next step.
+
+${rep||'[Your Name]'}`;
+}
+
+function buildGuidePreview() {
+  const body = document.getElementById('guide-prefill-body');
+  body.innerHTML = TEAMS.map(t => {
+    const involved = document.getElementById('st-check-'+t.id)?.checked;
+    const name = val('st-name-'+t.id);
+    const concern = val('st-concern-'+t.id);
+    const inv = document.getElementById('st-inv-'+t.id)?.value || t.inv;
+    return `
+    <div class="guide-preview-row${involved?' populated':''}">
+      <div class="gp-icon">${t.icon}</div>
+      <div style="flex:1">
+        <div class="gp-name">${t.label}${involved?' ✓':''}</div>
+        <div class="gp-fields">
+          <div class="gp-field">
+            <div class="gp-field-label">Contact</div>
+            <div class="gp-field-val${name?'':' empty'}">${name||'Not mentioned'}</div>
+          </div>
+          <div class="gp-field">
+            <div class="gp-field-label">Involvement</div>
+            <div class="gp-field-val${involved?'':' empty'}">${involved?inv:'Not involved'}</div>
+          </div>
+          ${concern ? `<div class="gp-field" style="grid-column:1/-1">
+            <div class="gp-field-label">Priority / Concern</div>
+            <div class="gp-field-val">${concern}</div>
+          </div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════
+//  EXPORT SELECTION
+// ═══════════════════════════════
+function selectExport(type) {
+  currentExport = type;
+  ['summary','email','guide'].forEach(t => {
+    document.getElementById('export-card-'+t).classList.toggle('selected', t===type);
+    document.getElementById('export-'+t).style.display = t===type ? 'block' : 'none';
+  });
+}
+
+// ═══════════════════════════════
+//  COPY / PUSH
+// ═══════════════════════════════
+function copyDoc() {
+  const company = val('f-company');
+  const title = (val('f-calltype')||'Discovery')+' — '+(company||'Prospect');
+  const text = title+'\n'
+    +'Company: '+document.getElementById('doc-company').textContent
+    +' | Date: '+document.getElementById('doc-date').textContent
+    +' | Rep: '+document.getElementById('doc-rep').textContent+'\n\n'
+    +'SITUATION\n'+document.getElementById('doc-situation').textContent+'\n\n'
+    +'PAIN & PROBLEMS\n'+document.getElementById('doc-pain').textContent+'\n\n'
+    +'IMPACT & REQUIREMENTS\n'+document.getElementById('doc-impact').textContent+'\n\n'
+    +'DECISION PROCESS\n'+document.getElementById('doc-decision').textContent+'\n\n'
+    +'NEXT STEPS\n'+document.getElementById('doc-nextsteps').textContent;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyDocBtn');
+    btn.textContent = '✓ Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy Summary'; btn.classList.remove('copied'); }, 2500);
+    showToast('📋 Summary copied to clipboard');
+  });
+}
+
+function copyEmail() {
+  const subj = document.getElementById('email-subject').value;
+  const body = document.getElementById('email-body').value;
+  navigator.clipboard.writeText('Subject: '+subj+'\n\n'+body).then(() => {
+    const btn = document.getElementById('copyEmailBtn');
+    btn.textContent = '✓ Copied!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy Email'; btn.classList.remove('copied'); }, 2500);
+    showToast('📋 Email copied to clipboard');
+  });
+}
+
+function pushToGuide() {
+  const teamData = {};
+  TEAMS.forEach(t => {
+    const involved = document.getElementById('st-check-'+t.id)?.checked;
+    if (!involved) return;
+    teamData['dt-'+t.id] = {
+      names: val('st-name-'+t.id),
+      involvement: document.getElementById('st-inv-'+t.id)?.value || '',
+      initiatives: val('f-priorities'),
+      requirements: val('f-musthave'),
+      concerns: val('st-concern-'+t.id),
+      nextSteps: val('f-nextsteps'),
+    };
+  });
+  localStorage.setItem('slapfive_team', JSON.stringify(teamData));
+
+  const btn = document.getElementById('pushBtn');
+  btn.classList.add('pushed');
+  btn.innerHTML = '✓ Pushed to Buyer Guide';
+  showToast('✦ Decision Team pre-filled — open Buyer Guide to see it');
+  setTimeout(() => { btn.classList.remove('pushed'); btn.innerHTML = '↗ Push to Buyer Guide'; }, 4000);
+}
+
+// ═══════════════════════════════
+//  TOAST
+// ═══════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════
+//  BOOT
+// ═══════════════════════════════
+init();
+</script>
+</body>
+</html>
